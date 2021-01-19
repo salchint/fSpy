@@ -141,7 +141,8 @@ export default class Overlay3DPanel extends React.PureComponent<Overlay3DPanelPr
 
   private renderGridFloor(normalAxis: Axis, isField: boolean = false) {
     let cellCount = 10
-    let cellSize = 0.15 * this.normalizationFactor
+    // let cellSize = 0.15 * this.normalizationFactor
+    let cellSize = 10.0
     let gridLines3D: [Vector3D, Vector3D][] = []
     let min = -0.5 * cellCount * cellSize
     let max = min + cellCount * cellSize
@@ -163,18 +164,49 @@ export default class Overlay3DPanel extends React.PureComponent<Overlay3DPanelPr
 
     for (let i = 0; i <= cellCount; i++) {
       let linePosition = min + i * cellSize
+      let x = linePosition
+      let y = linePosition
       if (isField) {
         // Stretch the cells to get the RLL field's proportions
-        let touchLinePositionMin = min * 0.68
-        let touchLinePositionMax = max * 0.68
-        let touchLinePosition = touchLinePositionMin
-        if (i > cellCount / 2) {
-          touchLinePosition = touchLinePositionMax
+        let r1 = 0.68
+        let r2 = 0.68
+        let touchLinePosition = 0
+        switch (i) {
+          case 0:
+          case 1:
+          case 2:
+            touchLinePosition = -34
+            break
+          case 3:
+            touchLinePosition = -24
+            break
+          case 4:
+            touchLinePosition = -14
+            break
+          case 5:
+            touchLinePosition = 0
+            break
+          case 6:
+            touchLinePosition = 14
+            break
+          case 7:
+            touchLinePosition = 24
+            break
+          case 8:
+          case 9:
+          case 10:
+            touchLinePosition = 34
         }
+        let touchLinePositionMin = min * r1
+        let touchLinePositionMax = max * r2
+        // let touchLinePosition = touchLinePositionMin
+        // if (i > cellCount / 2) {
+        //   touchLinePosition = touchLinePositionMax
+        // }
         gridLines3D.push(
           [
-            gridPoint(touchLinePositionMin, linePosition),
-            gridPoint(touchLinePositionMax, linePosition)
+            gridPoint(touchLinePositionMin, x),
+            gridPoint(touchLinePositionMax, x)
           ]
         ),
           gridLines3D.push(
@@ -186,14 +218,14 @@ export default class Overlay3DPanel extends React.PureComponent<Overlay3DPanelPr
       } else {
         gridLines3D.push(
           [
-            gridPoint(min, linePosition),
-            gridPoint(max, linePosition)
+            gridPoint(min, x),
+            gridPoint(max, x)
           ]
         ),
           gridLines3D.push(
             [
-              gridPoint(linePosition, min),
-              gridPoint(linePosition, max)
+              gridPoint(y, min),
+              gridPoint(y, max)
             ]
           )
       }
