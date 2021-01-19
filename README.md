@@ -15,6 +15,12 @@ In theory, camera parameters computed by fSpy could be used in any application t
 Interested in writing an importer for your favorite application? Then the [fSpy project file format spec](https://github.com/stuffmatic/fSpy/blob/develop/project_file_format.md) is a good starting point.
 
 
+## Prerequisites
+
+- NodeJS + npm (https://nodejs.org/en/download/)
+- yarn (https://yarnpkg.com/getting-started/install)
+
+
 ## Building and running
 
 The following instructions are for developers. If you just want to run the app, [download the latest executable for your platform](https://github.com/stuffmatic/fSpy/releases).
