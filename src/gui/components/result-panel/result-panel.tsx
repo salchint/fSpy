@@ -24,7 +24,7 @@ import { SolverResult } from '../../solver/solver-result'
 import CameraPresetForm from '../common/camera-preset-form'
 import { CalibrationSettingsBase, CameraData } from '../../types/calibration-settings'
 import { cameraPresets } from '../../solver/camera-presets'
-import { GlobalSettings, CalibrationMode } from '../../types/global-settings'
+import { GlobalSettings, CalibrationMode, Overlay3DGuide } from '../../types/global-settings'
 import Dropdown from '../common/dropdown'
 import { FieldOfViewFormat, OrientationFormat, PrincipalPointFormat, ResultDisplaySettings } from '../../types/result-display-settings'
 import MathUtil from '../../solver/math-util'
@@ -125,6 +125,7 @@ export default class ResultPanel extends React.PureComponent<ResultPanelProps> {
         { this.renderOrientationSection() }
         { this.renderPrincipalPointSection() }
         { this.renderFocalLengthSection() }
+        { this.renderFieldDimensionSection() }
         {this.renderWarnings()}
       </div>
     )
@@ -310,6 +311,63 @@ export default class ResultPanel extends React.PureComponent<ResultPanelProps> {
           type={BulletListType.Warnings}
         /></div>) : null }
       </div>
+    )
+  }
+
+  private renderFieldDimensionSection() {
+    if (!this.props.solverResult.cameraParameters) {
+      return null
+    }
+    if (this.props.globalSettings.overlay3DGuide != Overlay3DGuide.Field) {
+      return null
+    }
+    const cameraParameters = this.props.solverResult.cameraParameters
+    let displayPosition = this.props.solverResult.cameraParameters.principalPoint
+    switch (this.props.resultDisplaySettings.principalPointFormat) {
+      case PrincipalPointFormat.Absolute:
+        displayPosition = CoordinatesUtil.convert(
+          displayPosition,
+          ImageCoordinateFrame.ImagePlane,
+          ImageCoordinateFrame.Absolute,
+          cameraParameters.imageWidth,
+          cameraParameters.imageHeight
+        )
+        break
+      case PrincipalPointFormat.Relative:
+        displayPosition = CoordinatesUtil.convert(
+          displayPosition,
+          ImageCoordinateFrame.ImagePlane,
+          ImageCoordinateFrame.Relative,
+          cameraParameters.imageWidth,
+          cameraParameters.imageHeight
+        )
+        break
+    }
+
+    return (
+      <div className='panel-section bottom-border'>
+          <div className='panel-group-title'>Field dimension</div>
+          <TableRow
+            isFirstRow={true}
+            title={'x_front'}
+            value={displayPosition.x}
+          />
+          <TableRow
+            isLastRow={true}
+            title={'y_left'}
+            value={displayPosition.y}
+          />
+          <TableRow
+            isFirstRow={true}
+            title={'x_rear'}
+            value={displayPosition.x}
+          />
+          <TableRow
+            isLastRow={true}
+            title={'y_right'}
+            value={displayPosition.y}
+          />
+        </div>
     )
   }
 
