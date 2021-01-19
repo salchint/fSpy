@@ -50,6 +50,11 @@ const options = [
     value: Overlay3DGuide.XYGridFloor,
     id: Overlay3DGuide.XYGridFloor,
     title: 'xy grid floor'
+  },
+  {
+    value: Overlay3DGuide.Field,
+    id: Overlay3DGuide.Field,
+    title: 'Field'
   }
 ]
 

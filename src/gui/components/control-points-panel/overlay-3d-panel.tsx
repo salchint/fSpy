@@ -83,6 +83,8 @@ export default class Overlay3DPanel extends React.PureComponent<Overlay3DPanelPr
         return this.renderGridFloor(Axis.PositiveX)
       case Overlay3DGuide.ZXGridFloor:
         return this.renderGridFloor(Axis.PositiveY)
+      case Overlay3DGuide.Field:
+        return this.renderGridFloor(Axis.PositiveZ, true)
     }
 
     return null
@@ -137,7 +139,7 @@ export default class Overlay3DPanel extends React.PureComponent<Overlay3DPanelPr
     )
   }
 
-  private renderGridFloor(normalAxis: Axis) {
+  private renderGridFloor(normalAxis: Axis, isField: boolean = false) {
     let cellCount = 10
     let cellSize = 0.15 * this.normalizationFactor
     let gridLines3D: [Vector3D, Vector3D][] = []
@@ -161,18 +163,40 @@ export default class Overlay3DPanel extends React.PureComponent<Overlay3DPanelPr
 
     for (let i = 0; i <= cellCount; i++) {
       let linePosition = min + i * cellSize
-      gridLines3D.push(
-        [
-          gridPoint(min, linePosition),
-          gridPoint(max, linePosition)
-        ]
-      ),
+      if (isField) {
+        // Stretch the cells to get the RLL field's proportions
+        let touchLinePositionMin = min * 0.68
+        let touchLinePositionMax = max * 0.68
+        let touchLinePosition = touchLinePositionMin
+        if (i > cellCount / 2) {
+          touchLinePosition = touchLinePositionMax
+        }
         gridLines3D.push(
           [
-            gridPoint(linePosition, min),
-            gridPoint(linePosition, max)
+            gridPoint(touchLinePositionMin, linePosition),
+            gridPoint(touchLinePositionMax, linePosition)
           ]
-        )
+        ),
+          gridLines3D.push(
+            [
+              gridPoint(touchLinePosition, min),
+              gridPoint(touchLinePosition, max)
+            ]
+          )
+      } else {
+        gridLines3D.push(
+          [
+            gridPoint(min, linePosition),
+            gridPoint(max, linePosition)
+          ]
+        ),
+          gridLines3D.push(
+            [
+              gridPoint(linePosition, min),
+              gridPoint(linePosition, max)
+            ]
+          )
+      }
     }
 
     let gridLines2D: [Point2D, Point2D][] = []

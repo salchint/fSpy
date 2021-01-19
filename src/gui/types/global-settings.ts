@@ -26,7 +26,8 @@ export enum Overlay3DGuide {
   Box = 'Box',
   XYGridFloor = 'XYGridFloor',
   YZGridFloor = 'YZGridFloor',
-  ZXGridFloor = 'ZXGridFloor'
+  ZXGridFloor = 'ZXGridFloor',
+  Field = 'Field'
 }
 
 export interface GlobalSettings {
