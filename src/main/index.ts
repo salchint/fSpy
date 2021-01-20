@@ -446,7 +446,7 @@ function createWindow() {
     }
 
     if (process.platform !== 'darwin') {
-      title += ' - fSpy'
+      title += ' - CalcCam'
     }
 
     window.setTitle(title)
