@@ -24,7 +24,8 @@ export enum FieldOfViewFormat {
 export enum OrientationFormat {
   AxisAngleDegrees = 'AxisAngleDegrees',
   AxisAngleRadians = 'AxisAngleRadians',
-  Quaterion = 'Quaterion'
+  Quaterion = 'Quaterion',
+  PanTiltZoom = 'PanTiltZoom'
 }
 
 export enum PrincipalPointFormat {

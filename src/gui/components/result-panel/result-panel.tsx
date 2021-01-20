@@ -167,11 +167,64 @@ export default class ResultPanel extends React.PureComponent<ResultPanelProps> {
       return null
     }
     const displayFormat = this.props.resultDisplaySettings.orientationFormat
-    const displayAxisAngle = displayFormat != OrientationFormat.Quaterion
+    const displayAxisAngle = (displayFormat == OrientationFormat.AxisAngleDegrees) || (displayFormat == OrientationFormat.AxisAngleRadians)
+    const displayPTZ = displayFormat == OrientationFormat.PanTiltZoom
     const cameraTransform = this.props.solverResult.cameraParameters.cameraTransform
     const components = displayAxisAngle ? MathUtil.matrixToAxisAngle(cameraTransform) : MathUtil.matrixToQuaternion(cameraTransform)
     if (displayFormat == OrientationFormat.AxisAngleDegrees) {
       components[3] = 180 * components[3] / Math.PI
+    } else if (displayFormat == OrientationFormat.PanTiltZoom) {
+      const quat = MathUtil.matrixToQuaternion(cameraTransform)
+      const x = quat[0]
+      const y = quat[1]
+      const z = quat[2]
+      const w = quat[3]
+
+      // const x = .4972
+      // const y = .1079
+      // const z = .1803
+      // const w = .84178
+
+      const sinrCosp = 2 * (w * x + y * z)
+      const cosrCosp = 1 - 2 * (x * x + y * y)
+      const roll = Math.atan2(sinrCosp, cosrCosp)
+
+      // #pitch (y-axis rotation)
+      const sinp = 2 * (w * y - z * x)
+      // #if (std::abs(sinp) >= 1)
+      // #    angles.pitch = std::copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+      // #else
+      const pitch = Math.asin(sinp)
+
+      // # yaw (z-axis rotation)
+      const sinyCosp = 2 * (w * z + x * y)
+      const cosyCosp = 1 - 2 * (y * y + z * z)
+      const yaw = Math.atan2(sinyCosp, cosyCosp)
+
+      const displayDegrees = this.props.resultDisplaySettings.fieldOfViewFormat == FieldOfViewFormat.Degrees
+      const compFactor = displayDegrees ? 180 / Math.PI : 1
+      components[0] = roll * compFactor
+      components[1] = pitch * compFactor
+      components[2] = yaw * compFactor
+
+      let cameraParameters = this.props.solverResult.cameraParameters
+      if (!cameraParameters) {
+        return null
+      }
+
+      let cameraData = this.props.calibrationSettings.cameraData
+      let sensorWidth = cameraData.customSensorWidth
+      let sensorHeight = cameraData.customSensorHeight
+      let absoluteFocalLength = 0
+      let sensorAspectRatio = sensorHeight > 0 ? sensorWidth / sensorHeight : 1
+      if (sensorAspectRatio > 1) {
+        // wide sensor.
+        absoluteFocalLength = 0.5 * sensorWidth * cameraParameters.relativeFocalLength
+      } else {
+        // tall sensor
+        absoluteFocalLength = 0.5 * sensorHeight * cameraParameters.relativeFocalLength
+      }
+      components[3] = absoluteFocalLength
     }
 
     return (
@@ -181,27 +234,28 @@ export default class ResultPanel extends React.PureComponent<ResultPanelProps> {
             options={[
               { id: OrientationFormat.AxisAngleDegrees, title: 'Axis angle (degrees)', value: OrientationFormat.AxisAngleDegrees },
               { id: OrientationFormat.AxisAngleRadians, title: 'Axis angle (radians)', value: OrientationFormat.AxisAngleRadians },
-              { id: OrientationFormat.Quaterion, title: 'Quaternion', value: OrientationFormat.Quaterion }
+              { id: OrientationFormat.Quaterion, title: 'Quaternion', value: OrientationFormat.Quaterion },
+              { id: OrientationFormat.PanTiltZoom, title: 'Pan tilt zoom', value: OrientationFormat.PanTiltZoom }
             ]}
             selectedOptionId={this.props.resultDisplaySettings.orientationFormat}
             onOptionSelected={this.props.onOrientationDisplayFormatChanged}
           />
           <TableRow
             isFirstRow={true}
-            title={'x'}
+            title={displayPTZ ? 'tilt' : 'x'}
             value={components[0]}
           />
           <TableRow
-            title={'y'}
+            title={displayPTZ ? 'roll' : 'y'}
             value={components[1]}
           />
           <TableRow
-            title={'z'}
+            title={displayPTZ ? 'pan' : 'z'}
             value={components[2]}
           />
           <TableRow
             isLastRow={true}
-            title={displayAxisAngle ? 'Angle' : 'w'}
+            title={displayAxisAngle ? 'Angle' : (displayPTZ ? 'zoom' : 'w')}
             value={components[3]}
           />
         </div>
